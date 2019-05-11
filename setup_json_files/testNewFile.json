@@ -1,5 +1,1 @@
-{
-    "DirOrder": [],
-    "MouseDirections": [],
-    "MouseClick": []
-}
+{"directions_order": ["Mv", "Mv", "Mv", "Mv", "Mv", "Clk", "Clk"], "move": [[1542, 324, 1], [424, 474, 1], [1557, 762, 1], [946, 59, 1], [973, 551, 1]], "click": [[973, 551, 2, 0.1], [1534, 510, 1, 0.1]]}

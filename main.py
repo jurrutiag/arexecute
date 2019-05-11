@@ -1,5 +1,5 @@
 import sys
-import recorder
+from recorder import RecorderExecuter
 
 
 def checkArgument(arg):
@@ -15,9 +15,9 @@ if __name__ == "__main__":
     # Pre setup
     recordNew = False
 
-    if (checkArgument("f")):
+    if checkArgument("f"):
         json_filename = getArgument(f)
-    elif (checkArgument("r")):
+    elif checkArgument("r"):
         json_filename = getArgument(r)
         recordNew = True
     else:
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # Start recording
     start = input("Press enter to start recording... (to leave just write exit and then enter)")
 
-    if (start == "exit"):
+    if start == "exit":
         exit("Program stopped by the user.")
 
     recorder.start()
