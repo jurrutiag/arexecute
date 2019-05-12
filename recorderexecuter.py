@@ -9,7 +9,7 @@ from recorder.recorder import Recorder
 
 
 class RecorderExecuter:
-    _method_translation = {"Mv": "move", "Clk": "click", "Wr": "write", "Var": "variable"}
+    _method_translation = {"Mv": "move", "Clk": "click", "Wr": "write", "Var": "variable", "W": "wait"}
 
     def __init__(self, json_filename, record=False, iterations=1,
                  directory="D:/Docs universidad/My programs/Action_Record_Execute/setup_json_files/", move_duration=1,
@@ -33,7 +33,8 @@ class RecorderExecuter:
 
     def setUp(self):
         if self._record:
-            self._recorder = Recorder(self._move_duration, self._click_interval, self._write_duration, self._dir + self._json_filename,
+            self._recorder = Recorder(self._move_duration, self._click_interval, self._write_duration,
+                                      self._dir + self._json_filename,
                                       RecorderExecuter._method_translation)
         else:
             with open(self._dir + self._json_filename, 'r') as f:
@@ -68,20 +69,23 @@ class RecorderExecuter:
                     json.dump(self._recorder.toJson(), f)
                 listener.stop()
 
-            elif self._recorder.isListening() and not key == Key.caps_lock:
+            elif (self._recorder.isListening() or self._recorder.isWaitingForWait()) and not key == Key.caps_lock:
                 self._recorder.record_write_hold(key)
 
         def on_release(key):
 
-            if key == Key.ctrl_l and not self._recorder.isListening():
+            if key == Key.ctrl_l and not self._recorder.isListening() and not self._recorder.isWaitingForWait():
                 self._recorder.out_ctrl()
-            elif key == Key.caps_lock and not self._recorder.isRecording():
+            elif key == Key.caps_lock and not self._recorder.isRecording() and not self._recorder.isWaitingForWait():
                 self._recorder.out_caps_lock()
-            elif key == Key.shift_l and not self._recorder.isListening():
+            elif key == Key.shift_l and not self._recorder.isListening() and not self._recorder.isWaitingForWait():
                 self._recorder.out_shift()
-            elif str(key) == "'v'" and not self._recorder.isListening() and not self._recorder.isRecording():
+            elif str(
+                    key) == "'v'" and not self._recorder.isListening() and not self._recorder.isRecording() and not self._recorder.isWaitingForWait():
                 self._recorder.out_v()
-            elif self._recorder.isListening() and not key == Key.caps_lock:
+            elif str(key) == "'w'" and not self._recorder.isListening() and not self._recorder.isRecording():
+                self._recorder.out_w()
+            elif (self._recorder.isListening() or self._recorder.isWaitingForWait()) and not key == Key.caps_lock:
                 self._recorder.record_write_release(key)
 
         with Listener(
@@ -107,13 +111,12 @@ if __name__ == "__main__":
     # recorder.start()
     # print(recorder.getDirections())
 
-
-    # recorder = RecorderExecuter("testDeepEdit.json", True)
-    # recorder.setUp()
-    # recorder.start()
-
-    time.sleep(1)
     recorder = RecorderExecuter("testDeepEdit.json", iterations=3)
     recorder.setUp()
     recorder.start()
-    print(recorder.getDirections())
+
+    # time.sleep(1)
+    # recorder = RecorderExecuter("testDeepEdit.json", iterations=3)
+    # recorder.setUp()
+    # recorder.start()
+    # print(recorder.getDirections())

@@ -36,7 +36,7 @@ class Executer:
         for elem in direction:
             self._keyboard.press_release(list(map(lambda x:KeyPressWrapper.intStrToKeyCode(x), elem)))
 
-            print(f" {KeyPressWrapper.intStrToKeyCode(elem[-1])}", end="")
+            print(f" {str(KeyPressWrapper.intStrToKeyCode(elem[-1]))}", end="")
             time.sleep(0.2)
         print(f"...")
 
@@ -46,6 +46,12 @@ class Executer:
         pyautogui.typewrite(str(direction[self._iteration]), direction[0])
 
         print(f"variable {direction[self._iteration - 1]} written")
+
+    def wait(self):
+        direction = self._directions_dict["wait"].get()
+
+        print(f"waiting for {float(direction[0])} seconds")
+        time.sleep(float(direction[0]))
 
     def execute(self, i):
         self._iteration = i

@@ -17,6 +17,8 @@ class Recorder:
         self._move_duration = move_duration
         self._write_duration = write_duration
 
+        self._waiting_w = False
+        self._waiting_w = False
         self._recording = False
         self._clicking = False
         self._listening_keys = False
@@ -71,6 +73,19 @@ class Recorder:
         self._current_record = [self._write_duration]
         self._json_directions_creator.push("variable", self._current_record)
 
+    def out_w(self):
+        if not self._waiting_w and not self._listening_keys and not self._recording:
+            self._waiting_w = True
+            self._current_record = []
+            print("Write waiting time...")
+        else:
+            waiting_time = "".join(list(map(lambda x: str(x[-1]), self._current_record)))[:-1]
+            self._json_directions_creator.push("wait", [waiting_time])
+            self._current_record = []
+            self._waiting_w = False
+            print("Saved waiting time.")
+
+
     def record_write_hold(self, key):
         if key == self._last_key:
             return
@@ -96,3 +111,6 @@ class Recorder:
 
     def isRecording(self):
         return self._recording
+
+    def isWaitingForWait(self):
+        return self._waiting_w
