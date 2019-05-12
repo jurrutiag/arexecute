@@ -1,1 +1,1 @@
-{"directions_order": ["Mv", "Mv", "Mv", "Mv", "Mv", "Clk", "Clk"], "move": [[1542, 324, 1], [424, 474, 1], [1557, 762, 1], [946, 59, 1], [973, 551, 1]], "click": [[973, 551, 2, 0.1], [1534, 510, 1, 0.1]]}
+{"directions_order": ["Mv", "Clk", "Wr", "Var"], "move": [[712, 332, 1]], "click": [[711, 333, 2, 0.1]], "write": [[[8]]], "variable": [[0.1, "asdasdasd", 123123123123, "hooooola", "quetaaaaaaal"]]}
