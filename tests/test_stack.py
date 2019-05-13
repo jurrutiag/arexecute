@@ -3,6 +3,7 @@ from stack.stack import Stack
 
 
 class StackTest(unittest.TestCase):
+
     def setUp(self):
         self.intStack = Stack([1, 2, 3])
         self.emptyStack = Stack([])
@@ -17,7 +18,7 @@ class StackTest(unittest.TestCase):
 
         self.stringStack.push("hola")
         self.assertEqual(["a", "b", "c", "hola"], self.stringStack.getArray())
-
+        
     def test_get(self):
         self.assertEqual(1, self.intStack.get())
         self.assertEqual([2, 3], self.intStack.getArray())
