@@ -14,6 +14,8 @@ if __name__ == "__main__":
 
     # Pre setup
     recordNew = False
+    iterations = None
+    after_script = False
 
     if checkArgument("f"):
         try:
@@ -30,10 +32,12 @@ if __name__ == "__main__":
         exit("Expected file or record command")
 
     if not recordNew:
-        iterations = input("Enter number of iterations (min: 1, max: minimum number of variables to write): ")
-        recorder = RecorderExecuter(json_filename, record=recordNew, iterations=int(iterations))
-    else:
-        recorder = RecorderExecuter(json_filename, record=recordNew)
+        iterations = int(input("Enter number of iterations (min: 1, max: minimum number of variables to write): "))
+
+    if checkArgument("s"):
+        after_script = True
+
+    recorder = RecorderExecuter(json_filename, record=recordNew, iterations=iterations, after_script=after_script)
 
     recorder.setUp()
 

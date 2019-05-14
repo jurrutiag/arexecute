@@ -4,21 +4,25 @@ from json_creator.jsonDirections import JsonDirections
 from pynput.keyboard import Key, Listener
 import pyautogui
 import copy
+from os import walk, system
 
 from recorder.recorder import Recorder
 
 
 class RecorderExecuter:
     _method_translation = {"Mv": "move", "Clk": "click", "Wr": "write", "Var": "variable", "W": "wait"}
+    _scripts_dir = "after_scripts"
 
-    def __init__(self, json_filename, record=False, iterations=None,
+    def __init__(self, json_filename, record=False, iterations=None, after_script=False,
                  directory="D:/Docs universidad/My programs/Action_Record_Execute/setup_json_files/", move_duration=1,
                  click_interval=0.1, write_duration=0.1):
         self._move_duration = move_duration
         self._click_interval = click_interval
         self._write_duration = write_duration
 
-        self._json_filename = json_filename
+        self._after_script = after_script
+
+        self._json_filename = json_filename + ".json"
         self._record = record
         self._dir = directory
         self._directions = None
@@ -59,7 +63,17 @@ class RecorderExecuter:
         while self._executer.notEmpty() > 0:
             self._executer.execute(i)
 
+        self.executeScript(i)
         self._executer.reset()
+
+    def executeScript(self, i):
+        if self._after_script:
+            scripts = list([filename for _, _, filename in walk(RecorderExecuter._scripts_dir)])
+            if any(".".join(self._json_filename.split(".")[:-1]) + ".py" in folder for folder in scripts):
+                result = system("python " + RecorderExecuter._scripts_dir + "/" + ".".join(self._json_filename.split(".")[:-1]) + ".py" + f" -i {i}")
+                if not result == 0:
+                    exit("Error on given script...")
+
 
     def record(self):
 
@@ -108,5 +122,6 @@ class RecorderExecuter:
 
 
 if __name__ == "__main__":
-    recorder = RecorderExecuter("test2.json")
-    recorder.defineVariables([[1], [2]])
+    recorder = RecorderExecuter("deepEdit", after_script=True)
+    recorder.executeScript(2)
+    
