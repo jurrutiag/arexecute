@@ -17,6 +17,8 @@ class Recorder:
         self._move_duration = move_duration
         self._write_duration = write_duration
 
+        self._variables_number = 0
+
         self._waiting_w = False
         self._waiting_w = False
         self._recording = False
@@ -70,6 +72,7 @@ class Recorder:
 
     def out_v(self):
         print("variable placed.")
+        self._variables_number += 1
         self._current_record = [self._write_duration]
         self._json_directions_creator.push("variable", self._current_record)
 
@@ -114,3 +117,6 @@ class Recorder:
 
     def isWaitingForWait(self):
         return self._waiting_w
+
+    def variableNumber(self):
+        return self._variables_number

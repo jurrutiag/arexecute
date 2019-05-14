@@ -11,7 +11,7 @@ from recorder.recorder import Recorder
 class RecorderExecuter:
     _method_translation = {"Mv": "move", "Clk": "click", "Wr": "write", "Var": "variable", "W": "wait"}
 
-    def __init__(self, json_filename, record=False, iterations=1,
+    def __init__(self, json_filename, record=False, iterations=None,
                  directory="D:/Docs universidad/My programs/Action_Record_Execute/setup_json_files/", move_duration=1,
                  click_interval=0.1, write_duration=0.1):
         self._move_duration = move_duration
@@ -49,10 +49,10 @@ class RecorderExecuter:
     # Click mouse, represented as click key, a stack, pairs (posX, posY, numClicks), direction representation "Clk"
 
     def start(self):
-        for i in range(self._iterations):
-            if self._record:
-                self.record()
-            else:
+        if self._record:
+            self.record()
+        else:
+            for i in range(self._iterations):
                 self.execute(i + 1)
 
     def execute(self, i):
@@ -93,30 +93,20 @@ class RecorderExecuter:
                 on_release=on_release) as listener:
             listener.join()
 
+    def variableNumber(self):
+        return self._recorder.variableNumber()
+
+    def defineVariables(self, vars):
+        with open(self._dir + self._json_filename, 'r') as f:
+            jsonRead = json.load(f)
+            jsonRead["variable"] = vars
+        with open(self._dir + self._json_filename, 'w') as f:
+            json.dump(jsonRead, f)
+
     def getDirections(self):
         return self._directions
 
 
-# Test functionalities, delete after release
 if __name__ == "__main__":
-    import time
-
-    # recorder = RecorderExecuter("testNewFile.json", True)
-    # recorder.setUp()
-    # recorder.start()
-
-    # time.sleep(1)
-    # recorder = RecorderExecuter("testNewFile.json", iterations=4)
-    # recorder.setUp()
-    # recorder.start()
-    # print(recorder.getDirections())
-
-    recorder = RecorderExecuter("testDeepEdit.json", iterations=3)
-    recorder.setUp()
-    recorder.start()
-
-    # time.sleep(1)
-    # recorder = RecorderExecuter("testDeepEdit.json", iterations=3)
-    # recorder.setUp()
-    # recorder.start()
-    # print(recorder.getDirections())
+    recorder = RecorderExecuter("test2.json")
+    recorder.defineVariables([[1], [2]])
