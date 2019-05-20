@@ -1,5 +1,5 @@
 import pyautogui
-from stack.stack import Stack
+from collections import deque
 import copy
 import time
 from keypresswrapper.keypresswrapper import KeyPressWrapper
@@ -8,28 +8,28 @@ from keypresswrapper.keypresswrapper import KeyPressWrapper
 class Executer:
     def __init__(self, directions, translations):
         directions_order = list(map(lambda x: translations[x], directions["directions_order"]))
-        self._directions_dict = {"directions_order": Stack(directions_order)}
+        self._directions_dict = {"directions_order": deque(directions_order)}
 
         for value in translations.values():
             if value in directions_order:
-                self._directions_dict[value] = Stack(directions[value])
+                self._directions_dict[value] = deque(directions[value])
 
         self._directions_dict_fixed = copy.deepcopy(self._directions_dict)
         self._iteration = 0
         self._keyboard = KeyPressWrapper()
 
     def move(self):
-        direction = self._directions_dict["move"].get()
-        print(f"move to: ({direction[0]}, {direction[1]})")
+        direction = self._directions_dict["move"].popleft()
+        print(f"moved to: ({direction[0]}, {direction[1]})")
         pyautogui.moveTo(direction[0], direction[1], duration=direction[2])
 
     def click(self):
-        direction = self._directions_dict["click"].get()
+        direction = self._directions_dict["click"].popleft()
         print(f"clicked {direction[2]} time(s) on: ({direction[0]}, {direction[1]})")
         pyautogui.click(direction[0], direction[1], clicks=direction[2], interval=direction[3])
 
     def write(self):
-        direction = self._directions_dict["write"].get()
+        direction = self._directions_dict["write"].popleft()
 
         print(f"wrote ", end="")
 
@@ -41,24 +41,25 @@ class Executer:
         print(f"...")
 
     def variable(self):
-        direction = self._directions_dict["variable"].get()
+        direction = self._directions_dict["variable"].popleft()
 
         pyautogui.typewrite(str(direction[self._iteration]), direction[0])
 
-        print(f"variable {direction[self._iteration - 1]} written")
+        print(f"variable {direction[self._iteration]} written")
 
     def wait(self):
-        direction = self._directions_dict["wait"].get()
+        direction = self._directions_dict["wait"].popleft()
 
-        print(f"waiting for {float(direction[0])} seconds")
-        time.sleep(float(direction[0]))
+        for i in range(int(direction[0]), -1, -1):
+            print(f"waiting for {float(i)} seconds")
+            time.sleep(1)
 
     def execute(self, i):
         self._iteration = i
-        getattr(self, self._directions_dict["directions_order"].get())()
+        getattr(self, self._directions_dict["directions_order"].popleft())()
 
     def notEmpty(self):
-        return len(self._directions_dict["directions_order"].getArray()) != 0
+        return len(self._directions_dict["directions_order"]) != 0
 
     def reset(self):
         self._directions_dict = copy.deepcopy(self._directions_dict_fixed)

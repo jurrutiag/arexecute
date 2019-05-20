@@ -1,64 +1,48 @@
 import sys
 from recorderexecuter import RecorderExecuter
+import argparse
 import json
-
-def checkArgument(arg):
-    return "-" + arg in sys.argv
-
-
-def getArgument(arg):
-    return sys.argv[sys.argv.index("-" + arg) + 1]
-
 
 if __name__ == "__main__":
 
-    # Pre setup
-    recordNew = False
-    iterations = None
-    after_script = False
+    parser = argparse.ArgumentParser(description="Record/Execute keyboard and mouse actions.", prog="Recorder/Executer")
 
-    if checkArgument("f"):
-        try:
-            json_filename = getArgument("f")
-        except IndexError:
-            exit("Missing argument, enter filename after the -f command")
-    elif checkArgument("r"):
-        try:
-            json_filename = getArgument("r")
-            recordNew = True
-        except IndexError:
-            exit("Missing argument, enter filename after the -r command")
-    else:
-        exit("Expected file or record command")
+    parser.add_argument("-e", action="store", dest="execute", type=int, help="Sets the execution mode on with i iterations.")
+    parser.add_argument("-d", action="store", default="D:/Docs universidad/My programs/Action_Record_Execute/setup_json_files/", dest="directory", help="Directory where the file to be used resides (or will be created).")
+    parser.add_argument("-s", action="store_true", default=False, dest="after_script", help="Sets the after script mode on.")
+    parser.add_argument("filename", action="store", help="Filename to be used for execution/recording (without extension).")
 
-    if not recordNew:
-        iterations = int(input("Enter number of iterations (min: 1, max: minimum number of variables to write): "))
+    args = parser.parse_args()
 
-    if checkArgument("s"):
-        after_script = True
+    json_filename = args.filename
 
-    recorder = RecorderExecuter(json_filename, record=recordNew, iterations=iterations, after_script=after_script)
+    execute = args.execute is not None
+    iterations = args.execute
+
+    recorder = RecorderExecuter(json_filename, execute=execute, iterations=iterations, after_script=args.after_script, directory=args.directory)
 
     recorder.setUp()
 
     # Start recording
-    msg = "Press enter to start recording... (to leave just write exit and then enter)" if recordNew else "Press enter to start executing... (to leave just write exit and then enter)"
+    msg = "Press enter to start recording... (to leave just write exit and then enter)" if not execute else "Press enter to start executing... (to leave just write exit and then enter)"
     start = input(msg)
 
     if start == "exit":
         exit("Program stopped by the user.")
+    else:
+        print("Recording...")
 
     recorder.start()
 
-    if recordNew:
+    if not execute:
         vNum = recorder.variableNumber()
         if vNum > 0:
             vars = []
             for var in range(vNum):
-                duration = input(f"Enter the writing duration of the variable {var + 1} (float): ")
+                duration = input(f"Enter the writing duration of the variable {var + 1} (float): \n")
 
-                input_type = input(f"Enter the variable {var + 1} type (str, int, float): ")
-                vi = input(f"Enter varibles array number {var + 1} (for a singleton (1 iteration) [x], for strings use quotes [\"a\", \"b\", ...]): ")
+                input_type = input(f"Enter the variable {var + 1} type (str, int, float): \n")
+                vi = input(f"Enter varibles array number {var + 1} (for a singleton (1 iteration) [x], for strings use quotes [\"a\", \"b\", ...]): \n")
                 vi = vi.strip("[").strip("]").split(",")
                 vi = [v.strip(" ") for v in vi]
                 if input_type == "int":
@@ -72,4 +56,4 @@ if __name__ == "__main__":
 
             recorder.defineVariables(vars)
 
-    input("Process finished successfully, press enter to leave...")
+    input("Process finished successfully, press enter to leave...\n")

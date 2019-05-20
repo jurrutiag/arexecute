@@ -8,5 +8,7 @@
     ],
     "python.testing.pyTestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": false,
+    "python.pythonPath": "C:\\Users\\Juan Urrutia\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe",
+    "python.testing.promptToConfigure": false
 }

@@ -21,7 +21,6 @@ class Recorder:
 
         self._waiting_w = False
         self._waiting_w = False
-        self._recording = False
         self._clicking = False
         self._listening_keys = False
         self._last_key = None
@@ -31,36 +30,37 @@ class Recorder:
         self._keyset = KeySet()
 
     def out_ctrl(self):
-        if not self._recording and not self._listening_keys:
-            self._recording = True
-            print("Started recording...")
+        self.terminate_clicking()
+
+        self._current_record = list(pyautogui.position())
+        self._current_record.append(self._move_duration)
+
+        self._json_directions_creator.push("move", self._current_record)
+
+        self._current_record = []
+
+        print("Recorded movement...")
+
+    def out_shift(self):
+        if not self._clicking:
+            self._current_record = list(pyautogui.position())
+            self._current_record += [1, self._click_interval]
         else:
-            if not self._clicking:
-                self._current_record = list(pyautogui.position())
-                self._current_record.append(self._move_duration)
+            self._current_record[2] += 1
+        self._clicking = True
 
-                self._json_directions_creator.push("move", self._current_record)
-            else:
-                self._json_directions_creator.push("click", self._current_record)
-
+    def terminate_clicking(self):
+        if self._clicking:
             self._clicking = False
-            self._recording = False
+            self._json_directions_creator.push("click", self._current_record)
+
+            print(f"Recorded {self._current_record[2]} click(s)")
 
             self._current_record = []
 
-            print("finished recording...")
-
-    def out_shift(self):
-        if self._recording and not self._listening_keys:
-            if not self._clicking:
-                self._current_record = list(pyautogui.position())
-                self._current_record += [1, self._click_interval]
-            else:
-                self._current_record[2] += 1
-            self._clicking = True
-
     def out_caps_lock(self):
-        if not self._listening_keys and not self._recording:
+        self.terminate_clicking()
+        if not self._listening_keys:
             self._listening_keys = True
             self._current_record = []
             print("Listening to keys...")
@@ -71,22 +71,27 @@ class Recorder:
             print("Stopped listening to keys.")
 
     def out_v(self):
+        self.terminate_clicking()
         print("variable placed.")
         self._variables_number += 1
         self._current_record = [self._write_duration]
         self._json_directions_creator.push("variable", self._current_record)
 
     def out_w(self):
-        if not self._waiting_w and not self._listening_keys and not self._recording:
+        self.terminate_clicking()
+        if not self._waiting_w:
             self._waiting_w = True
             self._current_record = []
             print("Write waiting time...")
         else:
-            waiting_time = "".join(list(map(lambda x: str(x[-1]), self._current_record)))[:-1]
+            try:
+                waiting_time = int("".join(list(map(lambda x: str(x[-1]), self._current_record)))[:-1])
+            except ValueError:
+                waiting_time = 1
             self._json_directions_creator.push("wait", [waiting_time])
             self._current_record = []
             self._waiting_w = False
-            print("Saved waiting time.")
+            print(f"Saved waiting time ({waiting_time}s).")
 
 
     def record_write_hold(self, key):
@@ -109,11 +114,11 @@ class Recorder:
     def toJson(self):
         return self._json_directions_creator.toJson()
 
-    def isListening(self):
+    def isListeningWrite(self):
         return self._listening_keys
 
-    def isRecording(self):
-        return self._recording
+    def isListeningClicks(self):
+        return self._clicking
 
     def isWaitingForWait(self):
         return self._waiting_w
