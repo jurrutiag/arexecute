@@ -1,9 +1,14 @@
 import json
 from collections import deque
 
+
 class JsonDirections:
-    def __init__(self, string, translations):
-        self._json_template = json.loads(string)
+    def __init__(self, translations):
+        self._json_template = {
+            "directions_order": [],
+            "move": [],
+            "click": []
+        }
         self._inverted_translations = {v: k for k, v in translations.items()}
         self._stacks = {"directions_order": deque([])}
 
