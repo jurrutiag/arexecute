@@ -43,7 +43,7 @@ class RecorderExecuter:
 
         self._directions = None
 
-        self._executer = None
+        self._executers = []
         self._recorder = None
 
         self._iterations = iterations
@@ -57,7 +57,7 @@ class RecorderExecuter:
                 with open(os.path.join(self._dir, self._json_filename), 'r') as f:
                     self._directions = json.load(f)
 
-                self._executer = Executer(copy.deepcopy(self._directions))
+                self._executers = [Executer(copy.deepcopy(d)) for d in self._directions["Recordings"]]
 
             except FileNotFoundError:
                 raise FileNotFoundError(f"Please specify a valid file when executing, {os.path.join(self._dir, self._json_filename)} doesn't exist")
@@ -80,20 +80,14 @@ class RecorderExecuter:
             self.record()
 
     def execute(self, i):
-        while self._executer.notEmpty() > 0:
-            self._executer.execute(i)
+        for executer in self._executers:
+            while executer.notEmpty() > 0:
+                executer.execute(i)
 
-        self.executeScript(i)
-        self._executer.reset()
+            self.executeScript(i)
+            executer.reset()
 
     def executeScript(self, i):
-        # if self._after_script:
-        #     scripts = list([filename for _, _, filename in walk(RecorderExecuter.scripts_dir)])
-        #     if any(".".join(self._json_filename.split(".")[:-1]) + ".py" in folder for folder in scripts):
-        #         result = system("python " + RecorderExecuter.scripts_dir + "/" + ".".join(self._json_filename.split(".")[:-1]) + ".py" + f" -i {i}")
-        #         if not result == 0:
-        #             exit("Error on given script...")
-        
         if self._after_script is not None:
             result = system("python " + self._after_script + ".py" + f" -i {i}")
             if not result == 0:
@@ -241,7 +235,8 @@ class Recorder:
         self.terminate_clicking()
         print("variable placed.")
         self._variables_number += 1
-        self._current_record = [self._write_duration]
+        #self._current_record = [self._write_duration]
+        self._current_record = "var"
         self._json_directions_creator.push("variable", self._current_record)
 
     def out_w(self):
@@ -252,7 +247,8 @@ class Recorder:
             print("Write waiting time...")
         else:
             try:
-                waiting_time = int("".join(list(map(lambda x: str(x[-1]), self._current_record)))[:-1])
+                waiting_time = int("".join(list(map(lambda x: str(x[-1]), self._current_record))))
+                print(waiting_time)
             except ValueError:
                 waiting_time = 1
             self._json_directions_creator.push("wait", [waiting_time])
@@ -307,6 +303,7 @@ class Executer:
         self._directions_dict_fixed = copy.deepcopy(self._directions_dict)
         self._iteration = 0
         self._keyboard = KeyPressWrapper()
+        self.write_speed = 0.1
 
     def move(self):
         direction = self._directions_dict["move"].popleft()
@@ -333,9 +330,15 @@ class Executer:
     def variable(self):
         direction = self._directions_dict["variable"].popleft()
 
-        pyautogui.typewrite(str(direction[self._iteration]), direction[0])
+        if isinstance(direction, list):
+            write_var = str(direction[self._iteration - 1])
+        
+        else:
+            write_var = str(direction)
+        
+        pyautogui.typewrite(write_var, self.write_speed)
 
-        print(f"variable {direction[self._iteration]} written")
+        print(f"variable {write_var} written")
 
     def wait(self):
         direction = self._directions_dict["wait"].popleft()

@@ -4,11 +4,11 @@ from collections import deque
 
 class JsonDirections:
     def __init__(self, translations):
-        self._json_template = {
+        self._json_template = {"Recordings": [{
             "directions_order": [],
             "move": [],
             "click": []
-        }
+        }]}
         self._inverted_translations = {v: k for k, v in translations.items()}
         self._stacks = {"directions_order": deque([])}
 
@@ -21,6 +21,6 @@ class JsonDirections:
 
     def toJson(self):
         for key, adeque in self._stacks.items():
-            self._json_template[key] = list(adeque)
+            self._json_template["Recordings"][0][key] = list(adeque)
 
         return self._json_template
