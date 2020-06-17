@@ -53,10 +53,14 @@ class RecorderExecuter:
 
     def setUp(self):
         if self._execute:
-            with open(os.path.join(self._dir, self._json_filename), 'r') as f:
-                self._directions = json.load(f)
+            try:
+                with open(os.path.join(self._dir, self._json_filename), 'r') as f:
+                    self._directions = json.load(f)
 
-            self._executer = Executer(copy.deepcopy(self._directions))
+                self._executer = Executer(copy.deepcopy(self._directions))
+
+            except FileNotFoundError:
+                raise FileNotFoundError(f"Please specify a valid file when executing, {os.path.join(self._dir, self._json_filename)} doesn't exist")
 
         else:
             self._recorder = Recorder(self._move_duration, self._click_interval, self._write_duration, os.path.join(self._dir, self._json_filename))
@@ -83,12 +87,17 @@ class RecorderExecuter:
         self._executer.reset()
 
     def executeScript(self, i):
-        if self._after_script:
-            scripts = list([filename for _, _, filename in walk(RecorderExecuter.scripts_dir)])
-            if any(".".join(self._json_filename.split(".")[:-1]) + ".py" in folder for folder in scripts):
-                result = system("python " + RecorderExecuter.scripts_dir + "/" + ".".join(self._json_filename.split(".")[:-1]) + ".py" + f" -i {i}")
-                if not result == 0:
-                    exit("Error on given script...")
+        # if self._after_script:
+        #     scripts = list([filename for _, _, filename in walk(RecorderExecuter.scripts_dir)])
+        #     if any(".".join(self._json_filename.split(".")[:-1]) + ".py" in folder for folder in scripts):
+        #         result = system("python " + RecorderExecuter.scripts_dir + "/" + ".".join(self._json_filename.split(".")[:-1]) + ".py" + f" -i {i}")
+        #         if not result == 0:
+        #             exit("Error on given script...")
+        
+        if self._after_script is not None:
+            result = system("python " + self._after_script + ".py" + f" -i {i}")
+            if not result == 0:
+                raise IOError("Error on given script...")
 
     def record(self):
 
@@ -98,7 +107,7 @@ class RecorderExecuter:
                     json.dump(self._recorder.toJson(), f)
                 listener.stop()
 
-            elif (self._recorder.isListeningWrite() or self._recorder.isWaitingForWait()) and not key == Key.caps_lock:
+            elif (self._recorder.isListeningWrite() or self._recorder.isWaitingForWait()) and (not key == Key.caps_lock) and (not str(key).lower() == "'w'"):
                 self._recorder.record_write_hold(key)
 
         def on_release(key):
@@ -254,6 +263,7 @@ class Recorder:
     def record_write_hold(self, key):
         if key == self._last_key:
             return
+
         self._last_key = key
 
         isAlpha = self._keyset.holdKey(key)

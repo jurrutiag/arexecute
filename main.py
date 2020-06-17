@@ -7,11 +7,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Record/Execute keyboard and mouse actions.", prog="Recorder/Executer")
 
-    parser.add_argument("-e", action="store", dest="execute", type=int, help="Sets the execution mode on with i iterations.")
-    parser.add_argument("-r", action="store_true", dest="recursively", default=False, help="Runs the execution recursively. No effect on recording.")
-    parser.add_argument("-d", action="store", default=None, dest="directory", help="Directory where the file to be used resides (or will be created).")
-    parser.add_argument("-a", action="store_true", default=False, dest="after_script", help="Sets the after script mode on.")
     parser.add_argument("filename", action="store", help="Filename to be used for execution/recording (without extension).")
+    parser.add_argument("-e", nargs="?", const=1, action="store", dest="execute", type=int, help="Sets the execution mode on with i iterations.")
+    parser.add_argument("-r", action="store_true", dest="recursively", default=False, help="Runs the execution recursively. No effect on recording.")
+    parser.add_argument("-d", action="store", default=".", dest="directory", help="Directory where the file to be used resides (or will be created).")
+    parser.add_argument("-a", action="store", default=None, dest="after_script", help="Sets a script to be executed after the actions.")
 
     args = parser.parse_args()
 
@@ -22,19 +22,19 @@ if __name__ == "__main__":
 
     recorder = RecorderExecuter(json_filename, execute=execute, iterations=iterations, after_script=args.after_script, directory=args.directory)
 
-    recorder.setUp()
-
-    instructions = "-> Denotes press first one key, then the next\nAlt - Stop recording\nW -> any number -> W - Add waiting time of number\nCaps Lock -> any string -> Caps Lock - Writes the string\nCtrl - Move mouse to current mouse position\nShift n times - Clicks n times in the last mouse position determined by Ctrl\n"
+    instructions = "(->) Denotes press first one key, then the next\nAlt - Stop recording\nW -> any number -> W - Add waiting time of number\nCaps Lock -> any string -> Caps Lock - Writes the string\nCtrl - Move mouse to current mouse position\nShift n times - Clicks n times in the last mouse position determined by Ctrl\n"
 
     # Start recording
-    msg = f"Press enter to start recording... (to leave just write exit and then enter)\n{instructions}" if not execute else "Press enter to start executing... (to leave just write exit and then enter)"
+    msg = f"{instructions}\nPress enter to start recording... (to leave just write exit and then enter)" if not execute else "Press enter to start executing... (to leave just write exit and then enter)"
     start = input(msg)
 
     if start == "exit":
         exit("Program stopped by the user.")
+
     else:
         print("Recording..." if not execute else "Executing...")
 
+    recorder.setUp()
     recorder.start()
 
     if execute and args.recursively:

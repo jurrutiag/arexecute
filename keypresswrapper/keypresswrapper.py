@@ -21,6 +21,7 @@ class KeyPressWrapper:
     def keyToKeyCodePair(key):
         try:
             return int(key.value.vk), KeyCode(int(key.value.vk)), True
+
         except AttributeError:
             return str(key.char), KeyCode(char=str(key.char)), False
 
@@ -28,5 +29,6 @@ class KeyPressWrapper:
     def intStrToKeyCode(key):
         try:
             return KeyCode(int(key))
+
         except ValueError:
             return KeyCode(char=key)
