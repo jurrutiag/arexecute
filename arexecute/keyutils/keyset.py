@@ -1,4 +1,4 @@
-from keyutils.keypresswrapper import KeyPressWrapper
+from .keypresswrapper import KeyPressWrapper
 
 
 class KeySet:

@@ -1,2 +1,2 @@
-from keyutils.keyset import KeySet
-from keyutils.keypresswrapper import KeyPressWrapper
+from .keyset import KeySet
+from .keypresswrapper import KeyPressWrapper

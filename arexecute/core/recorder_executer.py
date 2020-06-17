@@ -1,5 +1,5 @@
 import json
-from json_creator import JsonDirections
+from ..json_creator import JsonDirections
 from pynput.keyboard import Key, Listener
 import pyautogui
 import copy
@@ -7,7 +7,7 @@ from os import walk, system
 import os
 from collections import deque
 import time
-from keyutils import KeyPressWrapper, KeySet
+from ..keyutils import KeyPressWrapper, KeySet
 
 
 class RecorderExecuter:

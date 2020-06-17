@@ -1,4 +1,4 @@
-from core import RecorderExecuter
+from .core import RecorderExecuter
 
 import sys
 import argparse
