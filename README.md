@@ -5,7 +5,7 @@ Application to record actions on the computer and then execute them in a control
 
 To record run the following line:
 
-`arexecute example`
+`python arexecute.py example`
 
 In order to create a json file named example with the saved recording.
 The instructions for recording are the following:
@@ -24,7 +24,7 @@ In this way, one can record mouse movements, clicks, writing variables, etc.
 
 To execute, run the following line:
 
-`arexecute example -e`
+`python arexecute.py example -e`
 
 This will execute the recorded example once. In order to run more than one time, add an integer after de -e flag.
 To run it indefinitely use the -r flag. In order for this command to work, a previous recording named example in the same
