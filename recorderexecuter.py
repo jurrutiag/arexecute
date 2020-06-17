@@ -236,7 +236,7 @@ class Recorder:
         print("variable placed.")
         self._variables_number += 1
         #self._current_record = [self._write_duration]
-        self._current_record = "var"
+        self._current_record = "var_placeholder"
         self._json_directions_creator.push("variable", self._current_record)
 
     def out_w(self):

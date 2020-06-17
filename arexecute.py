@@ -9,6 +9,7 @@ INSTRUCTIONS ="""(->) Denotes press first one key, then the next
 Caps Lock -> any string -> Caps Lock - Writes the string
                   Ctrl               - Move mouse to current mouse position
             Shift n times            - Clicks n times in the last mouse position determined by Ctrl
+                  v                  - Adds a variable to be defined later
 """
 
 def main():
