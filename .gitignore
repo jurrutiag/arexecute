@@ -189,3 +189,5 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/virtualenv,visualstudiocode,python,windows
 
 setup_json_files/*
+arexecute_json_files/*
+arexecute_after_scripts/*
