@@ -191,3 +191,4 @@ $RECYCLE.BIN/
 setup_json_files/*
 arexecute_json_files/*
 arexecute_after_scripts/*
+*.spec

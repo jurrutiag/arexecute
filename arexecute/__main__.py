@@ -1,5 +1,6 @@
+from core import RecorderExecuter
+
 import sys
-from RecorderExecuter import RecorderExecuter
 import argparse
 import json
 
