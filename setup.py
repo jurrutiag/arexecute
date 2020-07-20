@@ -22,7 +22,7 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[
-        "pynput", "pyautogui"
+        "pynput>=1.6.8", "pyautogui>=0.9.50"
     ],
     entry_points={"console_scripts": ["arexecute=arexecute.__main__:main"]},
 )

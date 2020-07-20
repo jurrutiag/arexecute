@@ -9,6 +9,6 @@
     "python.testing.pytestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": false,
-    "python.pythonPath": "env\\Scripts\\python.exe",
+    "python.pythonPath": "d:\\Docs universidad\\My programs\\arexecute\\env\\Scripts\\python.exe",
     "python.testing.promptToConfigure": false
 }
