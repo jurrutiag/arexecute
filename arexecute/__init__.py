@@ -1,1 +1,2 @@
-from .core import Recorder, RecorderExecuter, Executer
+from .core import (Executer, Recorder, RecorderExecuter, start_executing,
+                   start_recording)

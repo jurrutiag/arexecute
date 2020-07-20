@@ -1,28 +1,27 @@
-import json
-from ..json_creator import JsonDirections
-from pynput.keyboard import Key, Listener
-import pyautogui
 import copy
-from os import walk, system
+import json
 import os
-from collections import deque
 import time
+from collections import deque
+from os import system, walk
+from pathlib import Path
+
+import pyautogui
+from pynput.keyboard import Key, Listener
+
+from ..json_creator import JsonDirections
 from ..keyutils import KeyPressWrapper, KeySet
 
 
 class RecorderExecuter:
-    method_translation = {"Mv": "move", "Clk": "click", "Wr": "write", "Var": "variable", "W": "wait"}
-    save_dir = "arexecute_json_files"
-    scripts_dir = "arexecute_after_scripts"
-
-    extension = ".json"
+    METHOD_TRANSLATION = {"Mv": "move", "Clk": "click", "Wr": "write", "Var": "variable", "W": "wait"}
+    EXTENSION = ".json"
 
     def __init__(self,
                  json_filename,
                  execute=False,
                  iterations=None,
-                 after_script=False,
-                 directory=None,
+                 after_script=None,
                  move_duration=1,
                  click_interval=0.1,
                  write_duration=0.1):
@@ -33,12 +32,15 @@ class RecorderExecuter:
 
         self._after_script = after_script
 
-        self._json_filename = json_filename + RecorderExecuter.extension
-        self._execute = execute
+        file_path = Path(json_filename)
+        file_dir = file_path.parent
+        file_path = file_dir  / (file_path.name + ('' if file_path.suffix == RecorderExecuter.EXTENSION else RecorderExecuter.EXTENSION))
 
-        self._dir = RecorderExecuter.save_dir if directory is None else directory
-        if not os.path.exists(self._dir):
-            os.makedirs(self._dir)
+        if not file_dir.is_dir():
+            raise FileNotFoundError("The directory of the file you want to create doesn't exist. Please create it first.")
+
+        self._json_filename = file_path
+        self._execute = execute
 
         self._directions = None
 
@@ -53,16 +55,16 @@ class RecorderExecuter:
     def setUp(self):
         if self._execute:
             try:
-                with open(os.path.join(self._dir, self._json_filename), 'r') as f:
+                with open(self._json_filename, 'r') as f:
                     self._directions = json.load(f)
 
                 self._executers = [Executer(copy.deepcopy(d)) for d in self._directions["Recordings"]]
 
             except FileNotFoundError:
-                raise FileNotFoundError(f"Please specify a valid file when executing, {os.path.join(self._dir, self._json_filename)} doesn't exist")
+                raise FileNotFoundError(f"Please specify a valid file when executing, {self._json_filename} doesn't exist")
 
         else:
-            self._recorder = Recorder(self._move_duration, self._click_interval, self._write_duration, os.path.join(self._dir, self._json_filename))
+            self._recorder = Recorder(self._move_duration, self._click_interval, self._write_duration, self._json_filename)
 
     # Direction types:
     #
@@ -96,7 +98,7 @@ class RecorderExecuter:
 
         def on_press(key):
             if key == Key.alt_l and not self._recorder.isListeningWrite():
-                with open(os.path.join(self._dir, self._json_filename), 'w') as f:
+                with open(self._json_filename, 'w') as f:
                     json.dump(self._recorder.toJson(), f)
                 listener.stop()
 
@@ -157,10 +159,10 @@ class RecorderExecuter:
         return self._recorder.variableNumber()
 
     def defineVariables(self, vars):
-        with open(os.path.join(self._dir, self._json_filename), 'r') as f:
+        with open(self._json_filename, 'r') as f:
             jsonRead = json.load(f)
             jsonRead["variable"] = vars
-        with open(os.path.join(self._dir, self._json_filename), 'w') as f:
+        with open(self._json_filename, 'w') as f:
             json.dump(jsonRead, f)
 
     def getDirections(self):
@@ -171,7 +173,7 @@ class Recorder:
     def __init__(self, move_duration, click_interval, write_duration, record_dir):
 
         open(record_dir, 'w').close()
-        self._json_directions_creator = JsonDirections(RecorderExecuter.method_translation)
+        self._json_directions_creator = JsonDirections(RecorderExecuter.METHOD_TRANSLATION)
 
         self._click_interval = click_interval
         self._move_duration = move_duration
@@ -292,10 +294,10 @@ class Recorder:
 
 class Executer:
     def __init__(self, directions):
-        directions_order = list(map(lambda x: RecorderExecuter.method_translation[x], directions["directions_order"]))
+        directions_order = list(map(lambda x: RecorderExecuter.METHOD_TRANSLATION[x], directions["directions_order"]))
         self._directions_dict = {"directions_order": deque(directions_order)}
 
-        for value in RecorderExecuter.method_translation.values():
+        for value in RecorderExecuter.METHOD_TRANSLATION.values():
             if value in directions_order:
                 self._directions_dict[value] = deque(directions[value])
 
