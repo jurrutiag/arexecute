@@ -11,13 +11,15 @@ In order to create a json file named example with the saved recording.
 The instructions for recording are the following:
 
 (->) Denotes press first one key, then the next
-                  Alt                - Stop recording
-         W -> any number -> W        - Add waiting time of seconds equal to the number
-Caps Lock -> any string -> Caps Lock - Writes the string
-                  Ctrl               - Move mouse to current mouse position
-            Shift n times            - Clicks n times in the last mouse position determined by Ctrl
-                   v                  - Adds a variable to be defined later
-            
+| Command                              | Action                                                       |
+|--------------------------------------|--------------------------------------------------------------|
+| Alt                                  | Stop recording                                               |
+| W -> any number -> W                 | Add waiting time of seconds equal to the number              |
+| Caps Lock -> any string -> Caps Lock | Writes the string                                            |
+| Ctrl                                 | Move mouse to current mouse position                         |
+| Shift n times                        | Clicks n times in the last mouse position determined by Ctrl |
+| v                                    | Adds a variable to be defined later                          |
+<br/>
 In this way, one can record mouse movements, clicks, writing variables, etc.
 
 # Executing
