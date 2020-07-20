@@ -1,13 +1,28 @@
 # arexecute
 Application to record actions on the computer and then execute them in a controlled way.
 
-# Recording
+## Installation
 
-To record run the following line:
+arexecute is in pypi, run the following command to install:
 
-`python -m arexecute example`
+`python -m pip install arexecute`
 
-In order to create a json file named example with the saved recording.
+After installation, all commands that are run using the module as a direct application can be run using either one of the following commands:
+
+`python -m arexecute <arexecute-commands>`
+
+or:
+
+`arexecute <arexecute-commands>`
+
+For the examples we will stick to the second one.
+
+## Recording
+
+To record into a file named "example.json", run the following line:
+
+`arexecute example`
+
 The instructions for recording are the following:
 
 (->) Denotes press first one key, then the next
@@ -22,17 +37,17 @@ The instructions for recording are the following:
 <br/>
 In this way, one can record mouse movements, clicks, writing variables, etc.
 
-# Executing
+## Executing
 
 To execute, run the following line:
 
-`python -m arexecute example -e`
+`arexecute example -e`
 
 This will execute the recorded example once. In order to run more than one time, add an integer after de -e flag.
-To run it indefinitely use the -r flag. In order for this command to work, a previous recording named example in the same
+To run it indefinitely use the -r flag. In order for this command to work, a previous recording named "example.json" in the same
 directory (or in the one defined with the -d flag) must exist.
 
-# Using Variables
+## Using Variables
 
 When recording, typing 'v' will add a new variable in place. In order to define this variable, you can go to the json file, 'variable' key
 and replace the "var_placeholder" strings for the variable itself. In order to use different variables for different iterations, replace
