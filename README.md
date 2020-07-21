@@ -23,6 +23,9 @@ To record into a file named "example.json", run the following line:
 
 `arexecute example`
 
+Here "example" can be a filename with a path different from the current directory,
+or it can be only a filename, either with the .json extension or without it.
+<br>
 The instructions for recording are the following:
 
 (->) Denotes press first one key, then the next
@@ -45,10 +48,17 @@ To execute, run the following line:
 
 This will execute the recorded example once. In order to run more than one time, add an integer after de -e flag.
 To run it indefinitely use the -r flag. In order for this command to work, a previous recording named "example.json" in the same
-directory (or in the one defined with the -d flag) must exist.
+directory, or in the one specified by the filename must exist.
 
 ## Using Variables
 
 When recording, typing 'v' will add a new variable in place. In order to define this variable, you can go to the json file, 'variable' key
 and replace the "var_placeholder" strings for the variable itself. In order to use different variables for different iterations, replace
 the same strings by lists of variables.
+
+## Usage on a .py file
+
+To use this program in a python script, just import the functions start_recording
+and start_executing, this functions receive the file to execute/record to, and also
+other parameters associated that are analogous to the flags shown.
+
