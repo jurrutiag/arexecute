@@ -1,5 +1,8 @@
-from .recorder_executer import RecorderExecuter
+import time
 from pathlib import Path
+
+from ..keyutils import KeyPressWrapper, KeySet
+from .recorder_executer import RecorderExecuter
 
 
 INSTRUCTIONS ="""(->) Denotes press first one key, then the next
@@ -45,3 +48,10 @@ def run(recorder_executer, execute, ask_before=False, recursively=False):
     if execute and recursively:
         while True:
             recorder_executer.start()
+
+
+def write(text):
+    print("Writing")
+    keyboard = KeyPressWrapper()
+    keyboard.press_release(list(map(lambda x: str(x), text)))
+    time.sleep(0.2)
