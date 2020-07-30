@@ -24,11 +24,13 @@ class RecorderExecuter:
                  after_script=None,
                  move_duration=1,
                  click_interval=0.1,
-                 write_duration=0.1):
+                 write_duration=0.1,
+                 write_speed=0.1):
 
         self._move_duration = move_duration
         self._click_interval = click_interval
         self._write_duration = write_duration
+        self.write_speed = write_speed
 
         self._after_script = after_script
 
@@ -58,7 +60,7 @@ class RecorderExecuter:
                 with open(self._json_filename, 'r') as f:
                     self._directions = json.load(f)
 
-                self._executers = [Executer(copy.deepcopy(d)) for d in self._directions["Recordings"]]
+                self._executers = [Executer(copy.deepcopy(d), self.write_speed) for d in self._directions["Recordings"]]
 
             except FileNotFoundError:
                 raise FileNotFoundError(f"Please specify a valid file when executing, {self._json_filename} doesn't exist")
@@ -293,7 +295,7 @@ class Recorder:
 
 
 class Executer:
-    def __init__(self, directions):
+    def __init__(self, directions, write_speed=0.1):
         directions_order = list(map(lambda x: RecorderExecuter.METHOD_TRANSLATION[x], directions["directions_order"]))
         self._directions_dict = {"directions_order": deque(directions_order)}
 
@@ -304,7 +306,7 @@ class Executer:
         self._directions_dict_fixed = copy.deepcopy(self._directions_dict)
         self._iteration = 0
         self._keyboard = KeyPressWrapper()
-        self.write_speed = 0.1
+        self.write_speed = write_speed
 
     def move(self):
         direction = self._directions_dict["move"].popleft()

@@ -21,8 +21,8 @@ def start_recording(record_file, ask_before=False):
     run(recorder, False, ask_before=ask_before)
 
 
-def start_executing(execute_file, ask_before=False, iterations=1, after_script=None, recursively=False):
-    executer = RecorderExecuter(execute_file, execute=True, iterations=iterations, after_script=after_script)
+def start_executing(execute_file, ask_before=False, iterations=1, after_script=None, recursively=False, write_speed=0.1):
+    executer = RecorderExecuter(execute_file, execute=True, iterations=iterations, after_script=after_script, write_speed=write_speed)
 
     run(executer, True, ask_before=ask_before, recursively=recursively)
 
