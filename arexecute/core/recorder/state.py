@@ -1,48 +1,40 @@
-from pynput.keyboard import Key
+from pynput.keyboard import Key, KeyCode
+import keyboard
 import pyautogui
+from ..arkey import ARKey
 
 
 class RecorderState:
     
     def __init__(self, machine):
         self.machine = machine
-
-    def _filter(self, key):
-        try:
-            return key.char.lower()
-
-        except AttributeError:
-            return key
+        self.ended_action = False
 
     def key_pressed(self, key):
-        key = self._filter(key)
+        processed_key = key.processed()
 
-        if key == self.machine.config.MOVE_KEY:
+        if processed_key == self.machine.config.MOVE_KEY:
             self.move_key_pressed()
 
-        elif key == self.machine.config.CLICK_KEY:
+        elif processed_key == self.machine.config.CLICK_KEY:
             self.clicking_key_pressed()
 
-        elif key == self.machine.config.RECORD_KEY:
+        elif processed_key == self.machine.config.RECORD_KEY:
             self.input_recording_key_pressed()
 
-        elif key == self.machine.config.WAIT_KEY:
+        elif processed_key == self.machine.config.WAIT_KEY:
             self.waiting_key_pressed()
 
-        elif key == self.machine.config.VARIABLE_PLACE_KEY:
+        elif processed_key == self.machine.config.VARIABLE_PLACE_KEY:
             self.variable_place_key_pressed()
 
-        elif key == self.machine.config.COMMAND_KEY:
-            self.command_key_pressed()
-
-        elif key == self.machine.config.END_ACTION_KEY:
+        elif processed_key == self.machine.config.END_ACTION_KEY:
             self.end_action_key_pressed()
 
-        elif key == self.machine.config.EXIT_KEY:
+        elif processed_key == self.machine.config.EXIT_KEY:
             self.exit_key_pressed()
 
-        else:
-            self.other_key_pressed(key)
+        self.any_key_pressed(key)
 
     def move_key_pressed(self):
         pass
@@ -59,16 +51,13 @@ class RecorderState:
     def variable_place_key_pressed(self):
         pass
 
-    def command_key_pressed(self):
-        pass
-
     def end_action_key_pressed(self):
         pass
 
     def exit_key_pressed(self):
         self.machine.set_state(ExitState(self.machine))
 
-    def other_key_pressed(self, key):
+    def any_key_pressed(self, key):
         pass
 
     def key_down(self, key):
@@ -77,8 +66,14 @@ class RecorderState:
 
 class ActionRecordingState(RecorderState):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, ending=False, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if ending:
+            if self.machine.config.END_ACTION_KEY == Key.caps_lock:
+                self.machine._keyboard.press(Key.caps_lock)
+                self.machine._keyboard.release(Key.caps_lock)
+
         self.machine.print("- Listening for actions -")
 
     def move_key_pressed(self):
@@ -100,9 +95,6 @@ class ActionRecordingState(RecorderState):
         self.machine.actions.variable()
         self.machine.print(f"Variable placed")
 
-    def command_key_pressed(self):
-        self.machine.set_state(CommandRecordingState(self.machine))
-
 
 class ClickingState(RecorderState):
 
@@ -121,30 +113,7 @@ class ClickingState(RecorderState):
 
     def end_action_key_pressed(self):
         self._record_clicks()
-        self.machine.set_state(ActionRecordingState(self.machine))
-
-
-class CommandRecordingState(RecorderState):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.command = []
-        self.machine.print("- Listening for commands -")
-
-    def _record_command(self):
-        self.machine.actions.record_command(self.command)
-        self.machine.print(f"Recorded command {' + '.join([str(key) for key in self.command])}")
-
-    def key_down(self, key):
-        key = self._filter(key)
-        if key in self.command or key == self.machine.config.END_ACTION_KEY:
-            return
-
-        self.command.append(key)
-
-    def end_action_key_pressed(self):
-        self._record_command()
-        self.machine.set_state(ActionRecordingState(self.machine))
+        self.machine.set_state(ActionRecordingState(self.machine, ending=True))
 
 
 class InputRecordingState(RecorderState):
@@ -152,18 +121,47 @@ class InputRecordingState(RecorderState):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputs = []
-        self.machine.print("- Listening for input (single strokes, not combined comands) -")
+        self.current_combination = []
+        self.current_pressed = []
+        self.machine.print("- Listening for input -")
+
+    def key_down(self, key):
+        if key in self.current_pressed or key.processed() == self.machine.config.END_ACTION_KEY:
+            return
+
+        if hasattr(key.key, 'char') and any(k.isctrl for k in self.current_pressed):
+            key = ARKey(chr(ord(key.key.char) + 64).lower())
+
+        self.current_combination.append(key)
+        self.current_pressed.append(key)
 
     def _record_input(self):
-        self.machine.actions.record_input(self.inputs)
+        self.machine.actions.type_input(self.inputs)
         self.machine.print(f"Recorded input")
 
     def end_action_key_pressed(self):
         self._record_input()
-        self.machine.set_state(ActionRecordingState(self.machine))
+        self.machine.set_state(ActionRecordingState(self.machine, ending=True))
 
-    def other_key_pressed(self, key):
-        self.inputs.append(key)
+    def any_key_pressed(self, key):
+        if key.processed() == self.machine.config.END_ACTION_KEY:
+            return
+
+        if hasattr(key.key, 'char') and any(k.isctrl for k in self.current_pressed):
+            key = ARKey(chr(ord(key.key.char) + 64).lower())
+
+        if len(self.current_pressed) == 1:
+            self.current_pressed = []
+
+        if key in self.current_pressed:
+            self.current_pressed.remove(key)
+
+        if len(self.current_pressed) == 0:
+            self.inputs.append(self.current_combination)
+            self.current_combination = []
+
+    def exit_key_pressed(self):
+        pass
 
 
 class ExitState(RecorderState):
@@ -185,9 +183,17 @@ class WaitingTimeSetState(RecorderState):
         self.machine.print(f"Wait with {self.time} seconds recorded")
 
     def end_action_key_pressed(self):
-        self._record_waiting()
-        self.machine.set_state(ActionRecordingState(self.machine))
+        if self.time.count(".") > 1:
+            self.machine.print("Invalid time (can't have two dots), returning to action state")
 
-    def other_key_pressed(self, key):
-        if key in "0123456789.":
-            self.time += key
+        else:
+            self._record_waiting()
+
+        self.machine.set_state(ActionRecordingState(self.machine, ending=True))
+
+    def any_key_pressed(self, key):
+        if key.processed() == self.machine.config.END_ACTION_KEY:
+            return
+
+        if key.processed() in "0123456789.":
+            self.time += key.processed()

@@ -1,10 +1,11 @@
 
 
 class Actions:
-    ACTION_TRANSLATION = {"move": "M", "click": "C", "write": "W", "variable": "V", "wait": "W", "input": "I", "command": "Cm"}
+    ACTION_TRANSLATION = {"move": "M", "click": "C", "variable": "V", "type_input": "I", "wait": "W"}
 
-    def __init__(self):
-        self.actions = []
+    def __init__(self, screen_size, actions=None):
+        self.actions = actions or []
+        self.screen_size = screen_size
         self.variables_index = 0
 
     def _add_action(self, action):
@@ -22,16 +23,12 @@ class Actions:
         self._add_action(action)
 
     def variable(self):
-        action = (Actions.ACTION_TRANSLATION["variable"], f"var{self.variables_index}")
+        action = (Actions.ACTION_TRANSLATION["variable"], self.variables_index)
         self.variables_index += 1
         self._add_action(action)
-        
-    def record_input(self, inputs):
-        action = (Actions.ACTION_TRANSLATION["input"], inputs)
-        self._add_action(action)
 
-    def record_command(self, command):
-        action = (Actions.ACTION_TRANSLATION["command"], command)
+    def type_input(self, inputs):
+        action = (Actions.ACTION_TRANSLATION["type_input"], inputs)
         self._add_action(action)
 
     def wait(self, time):
