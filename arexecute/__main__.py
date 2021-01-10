@@ -1,41 +1,60 @@
 import argparse
+from ctypes import ArgumentError
 import json
 import sys
 
-from .core import RecorderExecuter, start_executing, start_recording
+from core import executer, recorder
 
 
 INSTRUCTIONS ="""(->) Denotes press first one key, then the next
-                  Alt                - Stop recording
-         W -> any number -> W        - Add waiting time of seconds equal to the number
-Caps Lock -> any string -> Caps Lock - Writes the string
+                  Alt                - Stop recording any time
+         W -> any number -> W        - Add waiting time of seconds equal to the number, floats allowed with a dot
+                   C                 - Starts writing anything, commands allowed
+               Caps Lock             - Stops an action
                   Ctrl               - Move mouse to current mouse position
-            Shift n times            - Clicks n times in the last mouse position determined by Ctrl
+            Shift n times            - Clicks n times in the last mouse position or current if there were no movements before
                   v                  - Adds a variable to be defined later
 """
 
 def main():
     parser = argparse.ArgumentParser(description="Record/Execute keyboard and mouse actions.", prog="Recorder/Executer")
 
-    parser.add_argument("filename", action="store", help="Filename to be used for execution/recording (with or without extension, can be a full path).")
-    parser.add_argument("-e", nargs="?", const=1, action="store", dest="execute", type=int, help="Sets the execution mode on with i iterations (defaults to 1 iteration when number not specified).")
-    parser.add_argument("-r", action="store_true", dest="recursively", default=False, help="Runs the execution recursively until process killed. No effect on recording.")
-    parser.add_argument("-a", action="store", default=None, dest="after_script", help="Sets a python script to be executed after the actions (without .py extension).")
+    parser.add_argument("-e", action="store", dest="execute", default=None, help="Runs the execution recursively until process killed. No effect on recording.")
+    parser.add_argument("-r", action="store", dest="record", default=None, help="Runs the execution recursively until process killed. No effect on recording.")
+    parser.add_argument("-i", nargs="?", const=-1, default=1, action="store", dest="iterations", type=int, help="Sets the execution mode on with i iterations (defaults to 1 iteration when number not specified).")
 
     args = parser.parse_args()
 
+    if not ((args.execute is None) != (args.record is None)):
+        raise ArgumentError("Please specify either the -e option or the -r option with a filename (specify only one).")
+
     print("\n========================ACTION RECORD EXECUTE========================\n")
 
-    json_filename = args.filename
-
-    execute = args.execute is not None
-    iterations = args.execute
-
-    if execute:
-        start_executing(json_filename, ask_before=True, iterations=iterations, after_script=args.after_script, recursively=args.recursively)
+    if args.execute is not None:
+        json_filename = args.execute
+        execute = True
 
     else:
-        start_recording(json_filename, ask_before=True)
+        json_filename = args.record
+        execute = False
+
+    iterations = args.iterations
+
+    if execute:
+        e = executer.Executer(json_filename, verbose=1)
+        if iterations == -1:
+            while True: e.start()
+
+        else:
+            for _ in range(iterations): e.start()
+
+    else:
+        r = recorder.Recorder(json_filename, verbose=1)
+        if iterations == -1:
+            while True: r.start()
+
+        else:
+            for _ in range(iterations): r.start()
 
     input("Process finished successfully, press enter to leave...\n")
 

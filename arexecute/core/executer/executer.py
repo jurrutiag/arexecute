@@ -32,6 +32,9 @@ class Executer:
         self._keyboard = Controller()
 
     def verify_variables(self):
+        if self.variables is None:
+            return
+            
         variable_count = [self.translations[action[0]] for action in self.actions.get_actions_list()].count("variable")
         if len(self.variables) != variable_count:
             raise ValueError("Specify the same amount of variables that are defined in the recorded action.")
