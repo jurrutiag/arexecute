@@ -19,22 +19,31 @@ class Executer:
         self.filename = filename
         self.verbose = verbose
 
-        self.variables = variables
-
         self.current_position = None
         self.config = config or ExecuterConfig()
 
         self.actions = FileHandler.load(self.filename)
+        self.translations = {v: k for k, v in self.actions.ACTION_TRANSLATION.items()}
+
+        self.variables = variables
+        self.verify_variables()
+
+        self.size_conversion = [new_size / ref_size for new_size, ref_size in zip(pyautogui.size(), self.actions.screen_size)]
         self._keyboard = Controller()
 
+    def verify_variables(self):
+        variable_count = [self.translations[action[0]] for action in self.actions.get_actions_list()].count("variable")
+        if len(self.variables) != variable_count:
+            raise ValueError("Specify the same amount of variables that are defined in the recorded action.")
+
     def start(self):
-        translations = {v: k for k, v in self.actions.ACTION_TRANSLATION.items()}
         for action in self.actions.get_actions_list():
-            self.__getattribute__(translations[action[0]])(action[1])
+            self.__getattribute__(self.translations[action[0]])(action[1])
 
     def move(self, pos):
-        self.current_position = pos
-        pyautogui.moveTo(pos[0], pos[1], duration=self.config.MOVE_DURATION)
+        conv_pos = [pos * conversion for pos, conversion in zip(pos, self.size_conversion)]
+        self.current_position = conv_pos
+        pyautogui.moveTo(conv_pos[0], conv_pos[1], duration=self.config.MOVE_DURATION)
 
     def click(self, clicks):
         pos = self.current_position or list(pyautogui.position())
